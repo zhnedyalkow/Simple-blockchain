@@ -7,16 +7,34 @@ class Block {
         this.timestamp = timestamp;
         this.data = data;
         this.hash = this.calculateHash();
+        this.nonce = 0;
     }
 
     calculateHash() {
-        return SHA256(this.index + this.previousHash + this.timestamp + JSON.stringify(this.data)).toString();
+        return SHA256(
+            this.index + 
+            this.previousHash + 
+            this.timestamp + 
+            JSON.stringify(this.data) +
+            this.nonce
+        ).toString();
+    }
+
+    mineBlock(difficulty) {
+        while (this.hash.substring(0, difficulty) !==
+        Array(difficulty + 1).join('0')) {
+            this.nonce++;
+            this.hash = this.calculateHash();
+        }
+
+        console.log('Block mined: ' + this.hash);
     }
 }
 
 class Blockchain {
     constructor() {
         this.chain = [this.createGenesisBlock()];
+        this.difficulty = 5;
     }
 
     createGenesisBlock() {
@@ -29,7 +47,7 @@ class Blockchain {
 
     addBlock(newBlock) {
         newBlock.previousHash = this.getLatestBlock().hash;
-        newBlock.hash = newBlock.calculateHash();
+        newBlock.mineBlock(this.difficulty);
         this.chain.push(newBlock);
     }
 
@@ -51,13 +69,20 @@ class Blockchain {
 }
 
 let myCoin = new Blockchain();
+
+console.log('Mining block 1');
 myCoin.addBlock(new Block(1, '20/07/2017', { amount: 4 }));
-myCoin.addBlock(new Block(2, '22/09/2017', { amount: 15 }));
 
-console.log(myCoin);
+console.log('Mining block 2');
+myCoin.addBlock(new Block(2, '22/09/2017', { amount: 8}));
 
-console.log(`Blockchain valid? ` + myCoin.isChainValid());
+// myCoin.addBlock(new Block(1, '20/07/2017', { amount: 4 }));
+// myCoin.addBlock(new Block(2, '22/09/2017', { amount: 15 }));
 
-myCoin.chain[1].data = { amount: 200 };
-console.log(`Blockchain valid? ` + myCoin.isChainValid());
+// console.log(myCoin);
+
+// console.log(`Blockchain valid? ` + myCoin.isChainValid());
+
+// myCoin.chain[1].data = { amount: 200 };
+// console.log(`Blockchain valid? ` + myCoin.isChainValid());
 
